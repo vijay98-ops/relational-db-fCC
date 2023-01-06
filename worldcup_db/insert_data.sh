@@ -1,3 +1,4 @@
+
 #! /bin/bash
 
 if [[ $1 == "test" ]]
@@ -31,5 +32,17 @@ do
     then
       INSERT_TEAM=$($PSQL "INSERT INTO teams(name) VALUES('$OPPON')")
     fi
+  fi
+done
+
+cat games.csv | while IFS=',' read YR ROUND WINR OPPON WG OG
+do
+  if [[ $WINR != 'winner' ]]
+  then
+    #get winner_id and opponent_id
+    winner_id=$($PSQL "SELECT team_id FROM teams WHERE name='$WINR'")
+    opponent_id=$($PSQL "SELECT team_id FROM teams WHERE name='$OPPON'")
+    #insert the game record into games table
+    INSERT_GAME=$($PSQL "INSERT INTO games(year,round,winner_id,opponent_id,winner_goals,opponent_goals) VALUES($YR,'$ROUND',$winner_id,$opponent_id,$WG,$OG)")
   fi
 done
