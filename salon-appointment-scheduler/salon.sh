@@ -11,7 +11,6 @@ MAIN_MENU() {
   else
     echo -e "Welcome to My Salon, how can I help you?\n"
   fi
-  #echo Welcome to My Salon, how can I help you?
   echo -e "1) cut\n2) color\n3) style"
   read SERVICE_ID_SELECTED
   if [[ ! $SERVICE_ID_SELECTED =~ ^[1-3]$ ]]
@@ -19,8 +18,8 @@ MAIN_MENU() {
     MAIN_MENU "I could not find that service. What would you like today?"
   else
     echo -e "\nWhat's your phone number?"
+    read CUSTOMER_PHONE
   fi
-  read CUSTOMER_PHONE
   CUSTOMER_ID=$($PSQL "SELECT customer_id FROM customers WHERE phone='$CUSTOMER_PHONE'")
   # if customer does not exist
   if [[ -z $CUSTOMER_ID ]]
@@ -31,14 +30,20 @@ MAIN_MENU() {
   fi
   SERVICE_NAME=$($PSQL "SELECT name FROM services WHERE service_id=$SERVICE_ID_SELECTED")
   CUSTOMER_NAME=$($PSQL "SELECT name FROM customers WHERE phone='$CUSTOMER_PHONE'")
-  echo -e "\nWhat time would you like your $SERVICE_NAME, $CUSTOMER_NAME?"
+  echo -e "\nWhat time would you like your$SERVICE_NAME,$CUSTOMER_NAME?"
   read SERVICE_TIME
   
   CUSTOMER_ID=$($PSQL "SELECT customer_id FROM customers WHERE phone='$CUSTOMER_PHONE'")
   INSERT_APPOINTMENT=$($PSQL "INSERT INTO appointments(time,customer_id,service_id) VALUES('$SERVICE_TIME',$CUSTOMER_ID,$SERVICE_ID_SELECTED)")
-  echo -e "\nI have put you down for a $SERVICE_NAME at $SERVICE_TIME, $CUSTOMER_NAME."
-  exit 0
+  if [[ -z $INSERT_APPOINTMENT ]]
+  then
+    echo Appointment not noted
+  else
+    echo -e "\nI have put you down for a$SERVICE_NAME at $SERVICE_TIME,$CUSTOMER_NAME."
+    exit 0
+  fi
 }
 
 MAIN_MENU
 
+## since $SERVICE_TIME is not from SQL query, its value is as given from keyboard.
